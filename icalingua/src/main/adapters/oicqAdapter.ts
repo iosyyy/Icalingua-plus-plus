@@ -1129,7 +1129,7 @@ const adapter: OicqAdapter = {
             nick: bot.nickname,
             uin: bot.uin,
             priority: getConfig().priority,
-            sysInfo,
+            sysInfo:'',
             updateCheck: getConfig().updateCheck,
         })
         ui.setAllRooms(await storage.getAllRooms())

@@ -1,7 +1,7 @@
 <template>
     <div v-show="(isMobile && !showRoomsList) || !isMobile || singleRoom" class="vac-col-messages">
         <slot v-if="(!rooms.length && !loadingRooms) || (!room.roomId && !loadFirstRoom)" name="no-room-selected">
-            <div class="vac-container-center vac-room-empty">
+            <div class="drag vac-container-center vac-room-empty">
                 <div>{{ textMessages.ROOM_EMPTY }}</div>
             </div>
         </slot>
@@ -1298,6 +1298,10 @@ export default {
 </script>
 
 <style lang="scss">
+.drag{
+    -webkit-app-region: drag;
+    -webkit-user-select: none;
+}
 .vac-container-center {
     height: 100%;
     width: 100%;

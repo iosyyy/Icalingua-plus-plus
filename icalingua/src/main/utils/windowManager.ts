@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut, nativeTheme, shell, screen } from 'electron'
+import {BrowserWindow, globalShortcut, nativeTheme, shell, screen, ipcMain} from 'electron'
 import { clearCurrentRoomUnread, getCookies, sendOnlineData } from '../ipc/botAndStorage'
 import { getConfig } from './configManager'
 import getWinUrl from '../../utils/getWinUrl'
@@ -24,16 +24,14 @@ export const loadMainWindow = () => {
             : theme === 'dark'
             ? '#131415'
             : '#fff'
+
     mainWindow = newIcalinguaWindow({
         height: winSize.height,
         width: winSize.width,
         show: process.env.NODE_ENV !== 'development' && !argv.hide,
         backgroundColor: themeColor,
-        // titleBarStyle: 'hidden',
+        titleBarStyle: 'hidden',
         autoHideMenuBar: !getConfig().showAppMenu,
-        titleBarOverlay:{
-            color:themeColor
-        },
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
@@ -51,6 +49,15 @@ export const loadMainWindow = () => {
             globalShortcut.unregisterAll()
         }
     })
+    ipcMain.on('min', e=> mainWindow.minimize());
+    ipcMain.on('max', e=> {
+        if (mainWindow.isMaximized()) {
+            mainWindow.unmaximize()
+        } else {
+            mainWindow.maximize()
+        }
+    });
+    ipcMain.on('close', e=> mainWindow.close());
 
     if (process.env.NODE_ENV === 'development') {
         mainWindow.webContents.session.loadExtension(path.join(process.cwd(), 'node_modules/vue-devtools/vender/'))

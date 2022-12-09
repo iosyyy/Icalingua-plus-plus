@@ -9,7 +9,9 @@
                     @click="$emit('toggle-rooms-list')"
                 >
                     <slot name="toggle-icon">
-                        <svg-icon name="toggle" />
+                        <svg-icon class="nonedrag" @click="$emit('room-menu')"
+                                  @dblclick="$emit('open-group-member-panel')"
+                                  name="toggle"/>
                     </slot>
                 </div>
                 <div
@@ -34,31 +36,43 @@
                             <div
                                 v-if="membersCount"
                                 class="vac-room-info vac-text-ellipsis"
-                                @dblclick="$emit('open-group-member-panel')"
                             >
                                 {{ membersCount }} 名成员
                             </div>
                         </div>
                     </slot>
                 </div>
-                <slot v-if="room.roomId" name="room-options">
-                    <div class="vac-svg-button vac-room-options" @click="$emit('room-menu')">
-                        <slot name="menu-icon">
-                            <svg-icon name="menu" />
-                        </slot>
-                    </div>
-                    <transition v-if="menuActions.length" name="vac-slide-left">
-                        <div v-if="menuOpened" v-click-outside="closeMenu" class="vac-menu-options">
-                            <div class="vac-menu-list">
-                                <div v-for="action in menuActions" :key="action.name">
-                                    <div class="vac-menu-item" @click="menuActionHandler(action)">
-                                        {{ action.title }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </transition>
-                </slot>
+                <div class="nonedrag vac-svg-button vac-room-options">
+                    <a v-on:click="min" autofocus="false">
+                        <svg t="1670546305531" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                             p-id="5411" width="20" height="20">
+                            <path
+                                d="M923 571H130.7c-27.6 0-50-22.4-50-50s22.4-50 50-50H923c27.6 0 50 22.4 50 50s-22.4 50-50 50z"
+                                fill="#707070" p-id="5412"></path>
+                        </svg>
+                    </a>
+
+                </div>
+                <div style="margin-left: 20px" class="nonedrag vac-svg-button vac-room-options">
+                    <a v-on:click="max">
+                        <svg t="1670546396185" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                             p-id="1042" width="20" height="20">
+                            <path
+                                d="M812.3 959.4H213.7c-81.6 0-148-66.4-148-148V212.9c0-81.6 66.4-148 148-148h598.5c81.6 0 148 66.4 148 148v598.5C960.3 893 893.9 959.4 812.3 959.4zM213.7 120.9c-50.7 0-92 41.3-92 92v598.5c0 50.7 41.3 92 92 92h598.5c50.7 0 92-41.3 92-92V212.9c0-50.7-41.3-92-92-92H213.7z"
+                                fill="#707070" p-id="1043"></path>
+                        </svg>
+                    </a>
+                </div>
+                <div style="margin-left: 20px" class="nonedrag vac-svg-button vac-room-options">
+                    <a v-on:click="close">
+                        <svg t="1670545537363" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                             p-id="2639" width="20" height="20">
+                            <path
+                                d="M453.44 512L161.472 220.032a41.408 41.408 0 0 1 58.56-58.56L512 453.44 803.968 161.472a41.408 41.408 0 0 1 58.56 58.56L570.56 512l291.968 291.968a41.408 41.408 0 0 1-58.56 58.56L512 570.56 220.032 862.528a41.408 41.408 0 0 1-58.56-58.56L453.44 512z"
+                                fill="#707070" p-id="2640"></path>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </slot>
     </div>
@@ -71,6 +85,7 @@ import SvgIcon from '../../components/SvgIcon'
 
 import typingText from '../../utils/typingText'
 import getAvatarUrl from '../../../../../utils/getAvatarUrl'
+import {ipcRenderer} from 'electron'
 
 export default {
     name: 'RoomHeader',
@@ -83,15 +98,15 @@ export default {
     },
 
     props: {
-        currentUserId: { type: [String, Number], required: true },
-        textMessages: { type: Object, required: true },
-        singleRoom: { type: Boolean, required: true },
-        showRoomsList: { type: Boolean, required: true },
-        isMobile: { type: Boolean, required: true },
-        roomInfo: { type: Function, default: null },
-        menuActions: { type: Array, required: true },
-        room: { type: Object, required: true },
-        membersCount: { type: Number, default: 0 },
+        currentUserId: {type: [String, Number], required: true},
+        textMessages: {type: Object, required: true},
+        singleRoom: {type: Boolean, required: true},
+        showRoomsList: {type: Boolean, required: true},
+        isMobile: {type: Boolean, required: true},
+        roomInfo: {type: Function, default: null},
+        menuActions: {type: Array, required: true},
+        room: {type: Object, required: true},
+        membersCount: {type: Number, default: 0},
     },
 
     data() {
@@ -117,6 +132,15 @@ export default {
         closeMenu() {
             this.menuOpened = false
         },
+        min: function () {
+            ipcRenderer.send('min')
+        },
+        max: function () {
+            ipcRenderer.send('max')
+        },
+        close: function () {
+            ipcRenderer.send('close')
+        },
     },
 }
 </script>
@@ -131,6 +155,13 @@ export default {
     z-index: 10;
     background: var(--chat-header-bg-color);
     border-top-right-radius: var(--chat-container-border-radius);
+    -webkit-app-region: drag;
+    -webkit-user-select: none;
+}
+
+.nonedrag {
+    -webkit-app-region: no-drag;
+
 }
 
 .vac-room-wrapper {
