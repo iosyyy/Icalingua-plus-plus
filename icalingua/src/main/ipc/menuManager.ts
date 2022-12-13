@@ -188,8 +188,9 @@ const buildRoomMenu = (room: Room): Menu => {
             ],
         },
     ])
+    const webApps = new Menu();
     if (room.roomId < 0) {
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '查看精华消息',
                 async click() {
@@ -216,7 +217,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群公告',
                 async click() {
@@ -240,7 +241,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群文件',
                 async click() {
@@ -273,7 +274,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群荣誉',
                 async click() {
@@ -296,7 +297,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群相册',
                 async click() {
@@ -329,7 +330,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群作业',
                 async click() {
@@ -360,7 +361,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '群幸运字符',
                 async click() {
@@ -409,7 +410,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '成员活跃数据',
                 async click() {
@@ -499,7 +500,7 @@ const buildRoomMenu = (room: Room): Menu => {
         //         await win.loadURL('https://ti.qq.com/friends/recall?uin=' + room.roomId)
         //     },
         // }))
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '互动标识',
                 async click() {
@@ -521,7 +522,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '幸运字符',
                 async click() {
@@ -543,7 +544,7 @@ const buildRoomMenu = (room: Room): Menu => {
                 },
             }),
         )
-        menu.append(
+        webApps.append(
             new MenuItem({
                 label: '照片墙',
                 async click() {
@@ -573,6 +574,12 @@ const buildRoomMenu = (room: Room): Menu => {
             }),
         )
     }
+    menu.append(
+        new MenuItem({
+            label: '网页应用',
+            submenu: webApps,
+        })
+    )
     menu.append(
         new MenuItem({
             label: '获取历史消息',
@@ -1417,19 +1424,18 @@ ipcMain.on('popupMessageMenu', async (_, room: Room, message: Message, sect?: st
                             const parsed = Buffer.from(message._id as string, "base64")
                             const seqid = parsed.readUInt32BE(8)
                             const random = parsed.readUInt32BE(12)
-                            ;(async () => {
-                                const retPacket = await sendPacket('Oidb','OidbSvc.0xeac_1', {
-                                    1: -room.roomId,
-                                    2: seqid,
-                                    3: random,
-                                })
+                            sendPacket('Oidb','OidbSvc.0xeac_1', {
+                                1: -room.roomId,
+                                2: seqid,
+                                3: random,
+                            }).then(retPacket => {
                                 const ret = pb.decode(retPacket)[4]
                                 if (ret[1]) {
                                     ui.messageError(ret[1].toString())
                                 } else {
                                     ui.messageSuccess('设置精华成功')
                                 }
-                            })()
+                            })
                         },
                     }),
                 )
@@ -1440,19 +1446,18 @@ ipcMain.on('popupMessageMenu', async (_, room: Room, message: Message, sect?: st
                             const parsed = Buffer.from(message._id as string, "base64")
                             const seqid = parsed.readUInt32BE(8)
                             const random = parsed.readUInt32BE(12)
-                            ;(async () => {
-                                const retPacket = await sendPacket('Oidb','OidbSvc.0xeac_2', {
-                                    1: -room.roomId,
-                                    2: seqid,
-                                    3: random,
-                                })
+                            sendPacket('Oidb','OidbSvc.0xeac_2', {
+                                1: -room.roomId,
+                                2: seqid,
+                                3: random,
+                            }).then(retPacket => {
                                 const ret = pb.decode(retPacket)[4]
                                 if (ret[1]) {
                                     ui.messageError(ret[1].toString())
                                 } else {
                                     ui.messageSuccess('移出精华成功')
                                 }
-                            })()
+                            })
                         },
                     }),
                 )
